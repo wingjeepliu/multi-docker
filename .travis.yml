@@ -1,0 +1,25 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t wingjeepliu/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run wingjeepliu/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t wingjeepliu/multi-client  ./client
+  - docker build -t wingjeepliu/multi-nginx ./nginx
+  - docker build -t wingjeepliu/multi-server  ./server
+  - docker build -t wingjeepliu/multi-worker ./worker
+
+
+#login docker
+- echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+#take those images and push them to docker hug
+- docker push wingjeepliu/multi-client
+- docker push wingjeepliu/multi-nginx
+- docker push wingjeepliu/multi-server
+- docker push wingjeepliu/multi-worker
